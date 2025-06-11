@@ -1,0 +1,24 @@
+A model has been trained on all of the CICIDS days, then evaluated for each day separately.
+Below the results can be seen when different weight adjustments are applied to the training data
+(e.g. how should days be weighted, if different days have vastly different number of samples).
+
+Without weight adjustments:
+    Python F1: 0.96
+    Tuesday, data plane F1: 0.45
+    Friday, data plane F1: 0.96
+With training weight adjustments (single benign):
+    Python F1: 0.45  (this might be incorrect due to a bug: expected non-benign labels might have been incorrect for the non-first loaders)
+    Tuesday, data plane F1: 0.83
+    Friday, data plane F1: 0.36
+With training weight adjustments (50% benign):
+    Python F1: 0.78
+    Tuesday, data plane F1: 0.58
+    Friday, data plane F1: 0.93
+With training & scoring weight adjustments: (without retraining)
+    Python F1: 0.91
+    Tuesday, data plane F1: 0.58
+    Friday, data plane F1: 0.93
+
+Nem vagyok biztos benne, hogy melyik a legjobb megközelítés.
+Az a cél, hogy több dataset azonos súllyal számítson bele az eredménybe. Az F1 score valahogy az összes datasetre legyen jellemző, ne pedig csak arra, amelyikben a legszámosabb a positive label.
+Súlyozni a score-t elég rossz ötletnek hangzik: F1 score elég egyértelműen számítható a true/false positive/negative számokból, ezen nem kéne torzítani: súlyozás esetén nem azt mondaná meg a score, hogy a modell ténylegesen hogyan viselkedik

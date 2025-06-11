@@ -1,0 +1,16 @@
+A model was trained on each CICIDS day and evaluated on the same day.
+(A different subset of the dataset was used for training and evaluation.)
+
+First line of each day: Python F1 score
+Second line of each day: data plane evaluation F1 score
+
+friday/trainer.log: F1 score: 0.97 (unclassified flows considered as negative)
+friday/trainer.log: F1 score: 0.95 (unclassified flows considered as negative)
+
+thursday/trainer.log: F1 score: 0.98 (unclassified flows considered as negative)
+
+tuesday/trainer.log: F1 score: 0.97 (unclassified flows considered as negative)
+tuesday/trainer.log: F1 score: 0.96 (unclassified flows considered as negative)
+
+wednesday/trainer.log: F1 score: 0.88 (unclassified flows considered as negative)
+wednesday/trainer.log: F1 score: 0.87 (unclassified flows considered as negative)

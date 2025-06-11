@@ -1,0 +1,2 @@
+# Ignore day subdirectories (their contents), but not non-day files (e.g. helper scripts)
+/*/*

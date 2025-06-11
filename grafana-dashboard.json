@@ -1,0 +1,2544 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_INFLUXDB_SQL NATWORK-T52",
+      "label": "influxdb sql natwork-t52",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    },
+    {
+      "name": "VAR_CHUNK_LENGTH_SEC",
+      "type": "constant",
+      "label": "Chunk length (sec)",
+      "value": "45",
+      "description": ""
+    },
+    {
+      "name": "VAR_SHORT_CHUNK_LENGTH_SEC",
+      "type": "constant",
+      "label": "Short chunk length (sec)",
+      "value": "30",
+      "description": ""
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "canvas",
+      "name": "Canvas",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Flow count",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": 3600000,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 3,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "Model deployment"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              },
+              {
+                "id": "max",
+                "value": 1
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              },
+              {
+                "id": "custom.barAlignment",
+                "value": 1
+              },
+              {
+                "id": "custom.barWidthFactor",
+                "value": 0.1
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1
+              },
+              {
+                "id": "custom.lineStyle"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "Accuracy"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "custom.axisSoftMin",
+                "value": 0
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 1
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Accuracy"
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Accuracy"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Started benign flows / sec"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "New model deployed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Started attack flows / sec"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 15,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "alias": "Ongoing flow count",
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "groupBy": [],
+          "hide": true,
+          "measurement": "ongoing_flow_count",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "rawQuery": true,
+          "rawSql": "select time, count as \"Ongoing flow count\"\r\nfrom ongoing_flow_count\r\nWHERE $__timeFilter(time)\r\n",
+          "refId": "Ongoing flow count",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          },
+          "tags": []
+        },
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "select time, 1 as \"New model deployed\"\r\nfrom model_deployment\r\nWHERE $__timeFilter(time)",
+          "refId": "Model deployment",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          }
+        },
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  DATE_BIN(INTERVAL $chunk_length_sec, to_timestamp(time::bigint + ($chunk_length_sec * 1000000000) / 1)) as bucket,\r\n  SUM(CASE WHEN true_label = 1 THEN 1 ELSE 0 END) / $chunk_length_sec AS \"Started benign flows / sec\"\r\nFROM flow\r\nWHERE $__timeFilter(time)\r\nGROUP BY bucket\r\nORDER BY bucket",
+          "refId": "Started benign flows/sec",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          },
+          "table": "flow"
+        },
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  DATE_BIN(INTERVAL $chunk_length_sec, to_timestamp(time::bigint + ($chunk_length_sec * 1000000000) / 1)) as bucket,\r\n  SUM(CASE WHEN true_label = 2 THEN 1 ELSE 0 END) / $chunk_length_sec AS \"Started attack flows / sec\"\r\nFROM flow\r\nWHERE $__timeFilter(time)\r\nGROUP BY bucket\r\nORDER BY bucket",
+          "refId": "Started attack flows/sec",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          },
+          "table": "flow"
+        },
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  DATE_BIN(INTERVAL $short_chunk_length_sec, to_timestamp(time::bigint + ($short_chunk_length_sec * 1000000000) / 1)) as bucket,\r\n  AVG(CASE WHEN (predicted_label = true_label) or (predicted_label = 0 and true_label = 1) THEN 1 ELSE 0 END) AS \"Accuracy\"\r\nFROM flow\r\nWHERE $__timeFilter(time)\r\nGROUP BY bucket\r\nORDER BY bucket",
+          "refId": "Accuracy",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Flow counts & accuracy over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 3,
+          "fieldMinMax": false,
+          "mappings": [
+            {
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "super-light-green",
+                  "index": 0
+                },
+                "to": 0.13
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 0.13,
+                "result": {
+                  "color": "light-green",
+                  "index": 1
+                },
+                "to": 0.26
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 0.26,
+                "result": {
+                  "color": "green",
+                  "index": 2
+                },
+                "to": 0.4
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 0.4,
+                "result": {
+                  "color": "semi-dark-green",
+                  "index": 3
+                },
+                "to": 0.5
+              },
+              "type": "range"
+            },
+            {
+              "options": {
+                "from": 0.5,
+                "result": {
+                  "color": "dark-green",
+                  "index": 4
+                },
+                "to": 1
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 9,
+        "x": 15,
+        "y": 0
+      },
+      "id": 9,
+      "options": {
+        "infinitePan": false,
+        "inlineEditing": false,
+        "panZoom": false,
+        "root": {
+          "background": {
+            "color": {
+              "fixed": "transparent"
+            }
+          },
+          "border": {
+            "color": {
+              "fixed": "dark-green"
+            }
+          },
+          "constraint": {
+            "horizontal": "left",
+            "vertical": "top"
+          },
+          "elements": [
+            {
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "text"
+                },
+                "size": 20,
+                "text": {
+                  "fixed": "Predicted label"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 2",
+              "placement": {
+                "height": 50,
+                "left": 167,
+                "rotation": 0,
+                "top": 281,
+                "width": 186
+              },
+              "type": "text"
+            },
+            {
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "text"
+                },
+                "size": 20,
+                "text": {
+                  "fixed": "True label"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 3",
+              "placement": {
+                "height": 50,
+                "left": -34,
+                "rotation": 270,
+                "top": 102,
+                "width": 137
+              },
+              "type": "text"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "pred_b_true_b",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "size": 20,
+                "text": {
+                  "field": "pred_b_true_b",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "connections": [],
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 5",
+              "placement": {
+                "height": 100,
+                "left": 144,
+                "top": 13,
+                "width": 100
+              },
+              "type": "metric-value"
+            },
+            {
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "text"
+                },
+                "size": 18,
+                "text": {
+                  "fixed": "Attack"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 7",
+              "placement": {
+                "height": 100,
+                "left": 44,
+                "rotation": 0,
+                "top": 143,
+                "width": 100
+              },
+              "type": "text"
+            },
+            {
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "text"
+                },
+                "size": 18,
+                "text": {
+                  "fixed": "Benign"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 6",
+              "placement": {
+                "height": 100,
+                "left": 44,
+                "rotation": 0,
+                "top": 13,
+                "width": 100
+              },
+              "type": "text"
+            },
+            {
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "text"
+                },
+                "size": 18,
+                "text": {
+                  "fixed": "Benign"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 8",
+              "placement": {
+                "height": 50,
+                "left": 144,
+                "rotation": 0,
+                "top": 243,
+                "width": 100
+              },
+              "type": "text"
+            },
+            {
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "text"
+                },
+                "size": 18,
+                "text": {
+                  "fixed": "Attack"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 9",
+              "placement": {
+                "height": 50,
+                "left": 274,
+                "rotation": 0,
+                "top": 243,
+                "width": 100
+              },
+              "type": "text"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "pred_a_true_b",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "width": 0
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "size": 20,
+                "text": {
+                  "field": "pred_a_true_b",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "connections": [],
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 10",
+              "placement": {
+                "height": 100,
+                "left": 274,
+                "top": 13,
+                "width": 100
+              },
+              "type": "metric-value"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "pred_b_true_a",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "size": 20,
+                "text": {
+                  "field": "pred_b_true_a",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 11",
+              "placement": {
+                "height": 100,
+                "left": 144,
+                "top": 143,
+                "width": 100
+              },
+              "type": "metric-value"
+            },
+            {
+              "background": {
+                "color": {
+                  "field": "pred_a_true_a",
+                  "fixed": "#D9D9D9"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "config": {
+                "align": "center",
+                "color": {
+                  "fixed": "#000000"
+                },
+                "size": 20,
+                "text": {
+                  "field": "pred_a_true_a",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "valign": "middle"
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "links": [],
+              "name": "Element 12",
+              "placement": {
+                "height": 100,
+                "left": 274,
+                "top": 143,
+                "width": 100
+              },
+              "type": "metric-value"
+            }
+          ],
+          "name": "Element 1747345355932",
+          "placement": {
+            "height": 100,
+            "left": 0,
+            "rotation": 0,
+            "top": 0,
+            "width": 100
+          },
+          "type": "frame"
+        },
+        "showAdvancedTypes": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  AVG(CASE WHEN predicted_label = 2       AND true_label = 2 THEN 1 ELSE 0 END) AS pred_a_true_a,\r\n  AVG(CASE WHEN predicted_label = 2       AND true_label = 1 THEN 1 ELSE 0 END) AS pred_a_true_b,\r\n  AVG(CASE WHEN predicted_label IN (0, 1) AND true_label = 1 THEN 1 ELSE 0 END) AS pred_b_true_b,\r\n  AVG(CASE WHEN predicted_label IN (0, 1) AND true_label = 2 THEN 1 ELSE 0 END) AS pred_b_true_a\r\nFROM flow\r\nWHERE $__timeFilter(time)",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Confusion matrix",
+      "type": "canvas"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 7,
+        "x": 0,
+        "y": 10
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  DATE_BIN(INTERVAL $short_chunk_length_sec, to_timestamp(time::bigint + ($short_chunk_length_sec * 1000000000) / 1)) as bucket,\r\n  COUNT(*) AS \"Total flow count\"\r\nFROM flow\r\nWHERE $__timeFilter(time)\r\nGROUP BY bucket\r\nORDER BY bucket",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Started flows over time",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 20,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 7,
+        "x": 7,
+        "y": 10
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "vertical",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "value_and_name",
+        "wideLayout": false
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH flow_buckets AS (\r\n    SELECT\r\n        date_bin(INTERVAL $chunk_length_sec, to_timestamp(time::bigint + ($chunk_length_sec * 1000000000) / 1)) as window,\r\n        COUNT(*) AS flow_count\r\n    FROM flow\r\n    WHERE $__timeFilter(time)\r\n    GROUP BY window\r\n),\r\nmonitored_buckets AS (\r\n    SELECT\r\n        date_bin(INTERVAL $chunk_length_sec, to_timestamp(time::bigint + ($chunk_length_sec * 1000000000) / 2)) AS window,\r\n        SUM(count) AS total_count\r\n    FROM monitored_flow_count\r\n    WHERE $__timeFilter(time)\r\n    GROUP BY window\r\n)\r\nSELECT\r\n    m.window,\r\n    100.0 * m.total_count / f.flow_count AS \"% of monitored flows\"\r\nFROM monitored_buckets m\r\nINNER JOIN flow_buckets f ON m.window = f.window\r\nWHERE m.window < (SELECT MAX(x.window) FROM monitored_buckets x)\r\n  AND m.window < (SELECT MAX(x.window) FROM flow_buckets x)\r\n  AND (100.0 * m.total_count / f.flow_count) > 0.1\r\n  AND (100.0 * m.total_count / f.flow_count) < 20\r\nORDER BY m.window;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Percentage of monitored flows",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "Overall accuracy",
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "noValue": "N/A",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 10
+      },
+      "id": 7,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  AVG(CASE WHEN (predicted_label = true_label) or (predicted_label = 0 and true_label = 1) THEN 1 ELSE 0 END) AS \"Overall accuracy\"\r\nFROM flow\r\nWHERE $__timeFilter(time)",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Overall accuraccy",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "displayName": "Overall F1 score",
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "N/A"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 10
+      },
+      "id": 8,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "dataset": "iox",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH counts AS (\r\n  SELECT\r\n    SUM(CASE WHEN predicted_label = 2 AND true_label = 2 THEN 1 ELSE 0 END) AS tp,\r\n    SUM(CASE WHEN predicted_label = 2 AND true_label IN (0, 1) THEN 1 ELSE 0 END) AS fp,\r\n    SUM(CASE WHEN predicted_label IN (0, 1) AND true_label = 2 THEN 1 ELSE 0 END) AS fn\r\n  FROM flow\r\n  WHERE $__timeFilter(time)\r\n),\r\nmetrics AS (\r\n  SELECT\r\n    tp,\r\n    fp,\r\n    fn,\r\n    CASE WHEN (tp + fp) > 0 THEN tp * 1.0 / (tp + fp) ELSE 0 END AS precision,\r\n    CASE WHEN (tp + fn) > 0 THEN tp * 1.0 / (tp + fn) ELSE 0 END AS recall\r\n  FROM counts\r\n),\r\nf1_calc AS (\r\n  SELECT\r\n    precision,\r\n    recall,\r\n    CASE\r\n      WHEN (precision + recall) > 0\r\n      THEN 2 * precision * recall / (precision + recall)\r\n      ELSE 0\r\n    END AS f1_score\r\n  FROM metrics\r\n)\r\nSELECT f1_score as \"Overall F1 score\" FROM f1_calc\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Overall F1 score",
+      "type": "gauge"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 11,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "F1 score",
+                "axisPlacement": "auto",
+                "axisSoftMax": 1,
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Actual F1 score of deployed models"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Estimated F1 score of new model"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "fill": "solid"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Estimated F1 score of current model"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "id": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT time, f1_score as 'Estimated F1 score of current model'\r\nFROM time_window_score\r\nWHERE type = 'current_estimate' AND $__timeFilter(time)",
+              "refId": "Estimated F1 score of current model",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "f1_score",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "whereJsonTree": {
+                  "children1": [
+                    {
+                      "id": "ba99989b-cdef-4012-b456-7196d556d170",
+                      "properties": {
+                        "field": "type",
+                        "fieldSrc": "field",
+                        "operator": "equal",
+                        "value": [
+                          "current_estimate"
+                        ],
+                        "valueError": [
+                          null
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "text"
+                        ]
+                      },
+                      "type": "rule"
+                    }
+                  ],
+                  "id": "99899a9b-0123-4456-b89a-b196d526cbe3",
+                  "type": "group"
+                },
+                "whereString": "type = 'current_estimate'"
+              },
+              "table": "time_window_score"
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT time, f1_score as 'Estimated F1 score of new model'\r\nFROM time_window_score\r\nWHERE type = 'new_estimate' AND $__timeFilter(time)",
+              "refId": "Estimated F1 score of new model",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "f1_score",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "whereJsonTree": {
+                  "children1": [
+                    {
+                      "id": "ba99989b-cdef-4012-b456-7196d556d170",
+                      "properties": {
+                        "field": "type",
+                        "fieldSrc": "field",
+                        "operator": "equal",
+                        "value": [
+                          "current_estimate"
+                        ],
+                        "valueError": [
+                          null
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "text"
+                        ]
+                      },
+                      "type": "rule"
+                    }
+                  ],
+                  "id": "99899a9b-0123-4456-b89a-b196d526cbe3",
+                  "type": "group"
+                },
+                "whereString": "type = 'current_estimate'"
+              },
+              "table": "time_window_score"
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT time, f1_score as 'Actual F1 score of deployed models'\r\nFROM time_window_score\r\nWHERE type = 'current_actual' AND $__timeFilter(time)",
+              "refId": "Actual F1 score of deployed models",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "f1_score",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "whereJsonTree": {
+                  "children1": [
+                    {
+                      "id": "ba99989b-cdef-4012-b456-7196d556d170",
+                      "properties": {
+                        "field": "type",
+                        "fieldSrc": "field",
+                        "operator": "equal",
+                        "value": [
+                          "current_estimate"
+                        ],
+                        "valueError": [
+                          null
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "text"
+                        ]
+                      },
+                      "type": "rule"
+                    }
+                  ],
+                  "id": "99899a9b-0123-4456-b89a-b196d526cbe3",
+                  "type": "group"
+                },
+                "whereString": "type = 'current_estimate'"
+              },
+              "table": "time_window_score"
+            }
+          ],
+          "title": "Model scores over time",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Model complexity",
+                "axisPlacement": "auto",
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "Model deployment"
+                },
+                "properties": [
+                  {
+                    "id": "displayName",
+                    "value": "Model deployment in progress"
+                  },
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "hidden"
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 40
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "Model complexity"
+                },
+                "properties": [
+                  {
+                    "id": "custom.lineInterpolation",
+                    "value": "linear"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 16
+          },
+          "id": 10,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "select to_timestamp(time::bigint - 100000000) as x, 0 as y\r\nfrom model_deployment\r\nWHERE $__timeFilter(time)\r\n\r\nunion\r\n\r\nselect time as x, 1 as y\r\nfrom model_deployment\r\nWHERE $__timeFilter(time)\r\n\r\nunion\r\n\r\nselect to_timestamp(end_time) as x, 1 as y\r\nfrom model_deployment\r\nWHERE $__timeFilter(time)\r\n\r\nunion\r\n\r\nselect to_timestamp(end_time + 100000000) as x, 0 as y\r\nfrom model_deployment\r\nWHERE $__timeFilter(time)\r\n",
+              "refId": "Model deployment",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "f1_score",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "whereJsonTree": {
+                  "children1": [
+                    {
+                      "id": "ba99989b-cdef-4012-b456-7196d556d170",
+                      "properties": {
+                        "field": "type",
+                        "fieldSrc": "field",
+                        "operator": "equal",
+                        "value": [
+                          "current_estimate"
+                        ],
+                        "valueError": [
+                          null
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "text"
+                        ]
+                      },
+                      "type": "rule"
+                    }
+                  ],
+                  "id": "99899a9b-0123-4456-b89a-b196d526cbe3",
+                  "type": "group"
+                },
+                "whereString": "type = 'current_estimate'"
+              },
+              "table": "time_window_score"
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "select to_timestamp(time::bigint + duration / 2), complexity as \"Complexity of new model\"\r\nfrom model_deployment\r\nWHERE $__timeFilter(time)",
+              "refId": "Model complexity",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ]
+              }
+            }
+          ],
+          "title": "Model deployments",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Model information",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 13,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Score (F1 or Acc)",
+                "axisPlacement": "auto",
+                "axisSoftMax": 1,
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Actual F1 score of deployed models"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Estimated F1 score of new model"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "fill": "solid"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Estimated F1 score of current model"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "new model deployed"
+                },
+                "properties": [
+                  {
+                    "id": "custom.drawStyle",
+                    "value": "bars"
+                  },
+                  {
+                    "id": "custom.barAlignment",
+                    "value": 1
+                  },
+                  {
+                    "id": "custom.barWidthFactor",
+                    "value": 0.1
+                  },
+                  {
+                    "id": "custom.axisLabel",
+                    "value": ""
+                  },
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "hidden"
+                  },
+                  {
+                    "id": "custom.axisSoftMin",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.axisSoftMax",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "Started .+"
+                },
+                "properties": [
+                  {
+                    "id": "custom.axisPlacement",
+                    "value": "right"
+                  },
+                  {
+                    "id": "custom.axisLabel",
+                    "value": "Flow count"
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        0,
+                        10
+                      ],
+                      "fill": "dot"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Accuracy"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "super-light-red",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Started attack flows / sec"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Started benign flows / sec"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 17
+          },
+          "id": 12,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT time, f1_score as 'Estimated F1 score of current model'\r\nFROM time_window_score\r\nWHERE type = 'current_estimate' AND $__timeFilter(time)",
+              "refId": "Estimated F1 score of current model",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "f1_score",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "whereJsonTree": {
+                  "children1": [
+                    {
+                      "id": "ba99989b-cdef-4012-b456-7196d556d170",
+                      "properties": {
+                        "field": "type",
+                        "fieldSrc": "field",
+                        "operator": "equal",
+                        "value": [
+                          "current_estimate"
+                        ],
+                        "valueError": [
+                          null
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "text"
+                        ]
+                      },
+                      "type": "rule"
+                    }
+                  ],
+                  "id": "99899a9b-0123-4456-b89a-b196d526cbe3",
+                  "type": "group"
+                },
+                "whereString": "type = 'current_estimate'"
+              },
+              "table": "time_window_score"
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT time, f1_score as 'Estimated F1 score of new model'\r\nFROM time_window_score\r\nWHERE type = 'new_estimate' AND $__timeFilter(time)",
+              "refId": "Estimated F1 score of new model",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "f1_score",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "whereJsonTree": {
+                  "children1": [
+                    {
+                      "id": "ba99989b-cdef-4012-b456-7196d556d170",
+                      "properties": {
+                        "field": "type",
+                        "fieldSrc": "field",
+                        "operator": "equal",
+                        "value": [
+                          "current_estimate"
+                        ],
+                        "valueError": [
+                          null
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "text"
+                        ]
+                      },
+                      "type": "rule"
+                    }
+                  ],
+                  "id": "99899a9b-0123-4456-b89a-b196d526cbe3",
+                  "type": "group"
+                },
+                "whereString": "type = 'current_estimate'"
+              },
+              "table": "time_window_score"
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT time, f1_score as 'Actual F1 score of deployed models'\r\nFROM time_window_score\r\nWHERE type = 'current_actual' AND $__timeFilter(time)",
+              "refId": "Actual F1 score of deployed models",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "f1_score",
+                        "type": "functionParameter"
+                      }
+                    ],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "whereJsonTree": {
+                  "children1": [
+                    {
+                      "id": "ba99989b-cdef-4012-b456-7196d556d170",
+                      "properties": {
+                        "field": "type",
+                        "fieldSrc": "field",
+                        "operator": "equal",
+                        "value": [
+                          "current_estimate"
+                        ],
+                        "valueError": [
+                          null
+                        ],
+                        "valueSrc": [
+                          "value"
+                        ],
+                        "valueType": [
+                          "text"
+                        ]
+                      },
+                      "type": "rule"
+                    }
+                  ],
+                  "id": "99899a9b-0123-4456-b89a-b196d526cbe3",
+                  "type": "group"
+                },
+                "whereString": "type = 'current_estimate'"
+              },
+              "table": "time_window_score"
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "select time, 1 as \"New model deployed\"\r\nfrom model_deployment\r\nWHERE $__timeFilter(time)",
+              "refId": "new model deployed",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ]
+              }
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT\r\n  DATE_BIN(INTERVAL $chunk_length_sec, to_timestamp(time::bigint + ($chunk_length_sec * 1000000000) / 1)) as bucket,\r\n  SUM(CASE WHEN true_label = 1 THEN 1 ELSE 0 END) / $chunk_length_sec AS \"Started benign flows / sec\"\r\nFROM flow\r\nWHERE $__timeFilter(time)\r\nGROUP BY bucket\r\nORDER BY bucket",
+              "refId": "benign flows",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ]
+              }
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT\r\n  DATE_BIN(INTERVAL $chunk_length_sec, to_timestamp(time::bigint + ($chunk_length_sec * 1000000000) / 1)) as bucket,\r\n  SUM(CASE WHEN true_label = 2 THEN 1 ELSE 0 END) / $chunk_length_sec AS \"Started attack flows / sec\"\r\nFROM flow\r\nWHERE $__timeFilter(time)\r\nGROUP BY bucket\r\nORDER BY bucket",
+              "refId": "attack flows",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ]
+              }
+            },
+            {
+              "dataset": "iox",
+              "datasource": {
+                "type": "influxdb",
+                "uid": "${DS_INFLUXDB_SQL NATWORK-T52}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "hide": false,
+              "rawQuery": true,
+              "rawSql": "SELECT\r\n  DATE_BIN(INTERVAL $short_chunk_length_sec, to_timestamp(time::bigint + ($chunk_length_sec * 1000000000) / 1)) as bucket,\r\n  AVG(CASE WHEN (predicted_label = true_label) or (predicted_label = 0 and true_label = 1) THEN 1 ELSE 0 END) AS \"Accuracy\"\r\nFROM flow\r\nWHERE $__timeFilter(time)\r\nGROUP BY bucket\r\nORDER BY bucket",
+              "refId": "accuracy",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ]
+              }
+            }
+          ],
+          "title": "Combined graph",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Combined graphs",
+      "type": "row"
+    }
+  ],
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "description": "Sometimes data needs to be grouped into buckets. This specifies the length (time interval) of these buckets.",
+        "hide": 2,
+        "label": "Chunk length (sec)",
+        "name": "chunk_length_sec",
+        "query": "${VAR_CHUNK_LENGTH_SEC}",
+        "skipUrlSync": true,
+        "type": "constant",
+        "current": {
+          "value": "${VAR_CHUNK_LENGTH_SEC}",
+          "text": "${VAR_CHUNK_LENGTH_SEC}",
+          "selected": false
+        },
+        "options": [
+          {
+            "value": "${VAR_CHUNK_LENGTH_SEC}",
+            "text": "${VAR_CHUNK_LENGTH_SEC}",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "description": "Short version of the chunk length variable. Used for stuff requiring greater precision.",
+        "hide": 2,
+        "label": "Short chunk length (sec)",
+        "name": "short_chunk_length_sec",
+        "query": "${VAR_SHORT_CHUNK_LENGTH_SEC}",
+        "skipUrlSync": true,
+        "type": "constant",
+        "current": {
+          "value": "${VAR_SHORT_CHUNK_LENGTH_SEC}",
+          "text": "${VAR_SHORT_CHUNK_LENGTH_SEC}",
+          "selected": false
+        },
+        "options": [
+          {
+            "value": "${VAR_SHORT_CHUNK_LENGTH_SEC}",
+            "text": "${VAR_SHORT_CHUNK_LENGTH_SEC}",
+            "selected": false
+          }
+        ]
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "nowDelay": "30s",
+    "refresh_intervals": [
+      "1s",
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h"
+    ]
+  },
+  "timezone": "utc",
+  "title": "In-Network Attack Detection",
+  "uid": "d34eca28-ef67-4eef-bc0b-9f4b301b181e",
+  "version": 45,
+  "weekStart": ""
+}

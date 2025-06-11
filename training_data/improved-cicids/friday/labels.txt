@@ -1,0 +1,19 @@
+Loaded 396269 labels (72.37% of all rows)
+150560 rows had previously seen flow IDs with the same label (27.50% of all rows)
+728 rows had previously seen flow IDs with different labels (0.13% of all rows)
+Unparsed label statistics:
+    BENIGN: 190791 (48%);
+    Portscan: 158610 (40%);
+    DDoS: 44676 (11%);
+    Botnet - Attempted: 1456 (0%);
+    Botnet: 736 (0%)
+
+
+
+DDoS:
+from packet 7500000
+until the end
+
+Portscan:
+from packet 5700000
+for 2100000 packets

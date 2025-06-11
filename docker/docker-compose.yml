@@ -1,0 +1,14 @@
+services:
+  p4-natwork-t52:
+    image: p4-natwork-t52:latest
+    build:
+      context: .
+    privileged: true
+    stdin_open: true # Corresponds to docker run -i
+    tty: true # Corresponds to docker run -t
+    network_mode: host # Fix for "Error setting resource limits. Mininet's performance may be affected"
+    environment:
+      - DISPLAY # To make xterm work
+    volumes:
+      - "./..:/workspace/mnt"
+      - "/tmp/.X11-unix/:/tmp/.X11-unix/" # To make xterm work

@@ -1,0 +1,19 @@
+[2025-01-14 14:17:33,469] INFO [__main__] Filtering flows from features.pcap and writing to features_30sec.pcap
+[2025-01-14 14:17:33,470] INFO [__main__]   Flow timeout: 30 seconds
+[2025-01-14 14:17:33,470] INFO [__main__] Flows are defined by the 5-tuple (src/dst IP, protocol, src/dst port).
+[2025-01-14 14:17:33,470] INFO [__main__] Forward and backward direction (e.g. TCP payload and ACK) are treated as the same flow.
+[2025-01-14 14:17:36,455] DEBUG [__main__] Progress: at packet #100000...
+
+[...]
+
+[2025-01-14 14:25:57,758] DEBUG [__main__] Progress: at packet #11500000...
+[2025-01-14 14:25:59,267] INFO [__main__] Total flow count: 247244
+[2025-01-14 14:25:59,267] INFO [__main__]   Distinct flow IDs: 211748 (85.64%)
+[2025-01-14 14:25:59,267] INFO [__main__]   Duplicate flow IDs: 35496 (14.36%)
+[2025-01-14 14:25:59,281] INFO [__main__] Total packet count: 11551954
+[2025-01-14 14:25:59,281] INFO [__main__]   Non-IP packets: 82218 (0.71%)
+[2025-01-14 14:25:59,281] INFO [__main__]   Whitelisted packets: 10992853 (95.16%)
+[2025-01-14 14:25:59,281] INFO [__main__]   Blacklisted packets: 476883 (4.13%)
+[2025-01-14 14:25:59,325] INFO [__main__] Statistics of whitelisted flows:
+[2025-01-14 14:25:59,366] INFO [__main__]   Flow duration (ms): min-Q1-Q2-Q3-max = 0.0 - 23.67 - 163.84 - 5768.06 - 4564406.06
+[2025-01-14 14:25:59,385] INFO [__main__]   Packet count: min-Q1-Q2-Q3-max = 1 - 4 - 6 - 27 - 1873064
