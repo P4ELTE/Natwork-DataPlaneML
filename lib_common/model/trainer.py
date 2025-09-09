@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.utils import compute_sample_weight
 
-from lib_common.flow import Feature, FlowDataCols, FlowPredCols, Label, ListOfFeaturesSchema, ListOfFlowDataSchema, \
+from lib_common.flow import FlowDataCols, FlowPredCols, Label, ListOfFeaturesSchema, ListOfFlowDataSchema, \
     ListOfFlowPredSchema, ListOfLabelSchema
 from lib_common.model.classifier import calculate_classifiable_flows_mask, classify_flows_with_rf
 from lib_common.model.data import Model, ModelRF, ModelTrainingConfig
@@ -29,18 +29,11 @@ def train_model(config: ModelTrainingConfig, flow_data: ListOfFlowDataSchema,
     _logger.info(f"Training new model on {len(flow_data)} flows"
                  f" (Label stats: {Label.compute_count_statistics(flow_true_labels)})")
 
-    # If time-based features are disabled, set all of their values to 0, therefore the RFs won't use them
-    if not config.use_time_based_features:
-        _logger.info(f"Time-based features are disabled, setting their values to 0: {Feature.time_based_features()}")
+    # Some features might be disabled
+    if len(config.disabled_features) > 0:
+        _logger.info(f"Some features are disabled, setting their values to 0: {config.disabled_features}")
         flow_features = np.copy(flow_features)
-        for feature in Feature.time_based_features():
-            flow_features[:, :, feature.value] = 0
-
-    # Some additional features might be disabled
-    if len(Feature.disabled_features()) > 0:
-        _logger.info(f"Some features are disabled, setting their values to 0: {Feature.disabled_features()}")
-        flow_features = np.copy(flow_features)
-        for feature in Feature.disabled_features():
+        for feature in config.disabled_features:
             flow_features[:, :, feature.value] = 0
 
     # Flows are classified during training: we need to know which flows should be used for training subsequent RFs,

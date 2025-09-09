@@ -8,10 +8,10 @@ from typing import List, Literal, Optional, Tuple
 import numpy as np
 import psutil
 
-from controller.control_plane import monitoring, traffic_forwarding
-from controller.control_plane.model_encoding import ModelEncoder, create_model_encoder
-from controller.control_plane.monitoring import MonitoringAPI
-from controller.data import ControllerConfig, ModelRefiningConfig, Network
+from lib_common.control_plane import monitoring, traffic_forwarding
+from controller.model_encoding import ModelEncoder, create_model_encoder
+from controller.data import ControllerConfig, ModelRefiningConfig
+from lib_common.control_plane.data import Network
 from controller.interface import CoordinatorInterface, CoordinatorInterfaceHandler, OracleInterface
 from controller.stats import StatsManager
 from lib_common.flow import FlowDataCols, FlowPredCols, Label, ListOfFeaturesSchema, ListOfFlowDataSchema, \
@@ -22,6 +22,8 @@ from lib_common.model.export import visualize_model_nonblocking
 from lib_common.model.score import calculate_f1_score_not_set_is_benign
 from lib_common.model.trainer import train_model
 from p4_api_bridge import SwitchApiError
+
+from controller.reporting import ReportingAPI
 
 _logger = logging.getLogger(__name__)
 
@@ -168,7 +170,8 @@ class ModelRefiner:
         millis_since_start = time.time_ns() // 1_000_000 - self.start_time_ms
         time_id = f'{millis_since_start // 1000:04d}s_{millis_since_start % 1000:03d}ms'
         identifier = f'{time_id}_F1-{round(score * 100)}'
-        visualize_model_nonblocking(model, identifier, self._output_dir / 'models', first_page)
+        save_path = self._output_dir / 'models' / f'model_{identifier}.pdf'
+        visualize_model_nonblocking(model, identifier, save_path, first_page)
 
     def is_new_model_acceptable(self, old_score: float, new_score: float) -> bool:
         """Determines whether the new model should be preferred over the old one."""
@@ -203,10 +206,11 @@ class ControllerLogic(CoordinatorInterfaceHandler):
         self._model: Model = model
         self._stats: StatsManager = stats
         self._expected_packet_count: Optional[int] = expected_packet_count
-        self._model_encoder: ModelEncoder = create_model_encoder(config.switch, network.controlled_switches)
-        self._monitoring_api: MonitoringAPI = MonitoringAPI(start_time_ms, config.switch,
-                                                            network.controlled_switches,
-                                                            config.refining.flow_timeout_sec)
+        self._model_encoder: ModelEncoder = create_model_encoder(config.switch, network.controlled_switches,
+                                                                 config.training)
+        self._monitoring_api: ReportingAPI = ReportingAPI(start_time_ms, config.switch,
+                                                          network.controlled_switches,
+                                                          config.refining.flow_timeout_sec)
         self._recent_flows: RecentFlowStorage = RecentFlowStorage(start_time_ms, config.refining.min_recent_flow_count,
                                                                   config.refining.max_of_flow_time_window_sec)
         self._refiner: ModelRefiner = ModelRefiner(start_time_ms, output_dir, config.training, config.refining)
@@ -225,7 +229,8 @@ class ControllerLogic(CoordinatorInterfaceHandler):
 
         traffic_forwarding.configure_forwarding(self._network)
         self._model_encoder.load_model(self._model, self._config.training.classification_certainty_threshold)
-        monitoring.configure_monitoring(self._config.switch, self._network, self._config.total_monitored_flow_ratio)
+        flow_report_ratio = 1.0 if self._config.stats_from_all_flows else self._config.monitored_flow_ratio
+        monitoring.configure_reporting(self._config.switch, self._network, flow_report_ratio)
 
     def shutdown(self) -> None:
         """Signals the controller to shut down."""
@@ -422,11 +427,20 @@ class ControllerLogic(CoordinatorInterfaceHandler):
         return new_flow_data, new_flow_features, new_flow_pred, new_flow_true_labels
 
     def _calculate_monitored_flow_indexes(self, flow_data: ListOfFlowDataSchema) -> np.ndarray:
-        """Calculates the indexes of the flows that should be monitored (based on their flow id hash)."""
-        if self._config.total_monitored_flow_ratio <= 0:
+        """
+        Calculates the indexes of the flows that should be uses for training.
+        It is possible that all flows are collected to be included in the statistics, but only a subset of them
+        should be used for training (monitoring). This method selects this subset.
+        """
+        if not self._config.stats_from_all_flows:
+            # Only the flows that should be monitored got collected, so no filtering is necessary
+            return np.ones((len(flow_data),), dtype=bool)
+        elif self._config.monitored_flow_ratio <= 0:
+            # No flows should be monitored, so return an empty mask
             return np.zeros((len(flow_data),), dtype=bool)
-
-        flow_id_hash = np.sum(flow_data[:, range(FlowDataCols.flow_id_begin(), FlowDataCols.flow_id_end() + 1)],
-                              axis=1, dtype=np.uint32) * 37
-        mod_value = 10_000
-        return flow_id_hash % mod_value <= round(mod_value * self._config.total_monitored_flow_ratio)
+        else:
+            # Calculate the hash of the flow ID and use it to select a subset of flows
+            flow_id_hash = np.sum(flow_data[:, range(FlowDataCols.flow_id_begin(), FlowDataCols.flow_id_end() + 1)],
+                                  axis=1, dtype=np.uint32) * 37
+            mod_value = 10_000
+            return flow_id_hash % mod_value <= round(mod_value * self._config.monitored_flow_ratio)

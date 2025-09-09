@@ -7,10 +7,10 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from controller.data import ControlledSwitch
+from lib_common.control_plane.data import ControlledSwitch
 from lib_common.data import SwitchConstants
 from lib_common.flow import Feature, Label
-from lib_common.model.data import Model, ModelSlice
+from lib_common.model.data import Model, ModelSlice, ModelTrainingConfig
 from lib_common.model.model_ops import remap_model_rf_ids, slice_model
 from p4_api_bridge import TofinoShellApiConfig
 
@@ -122,7 +122,7 @@ class TablePerDepthModelEncoder(ModelEncoder):
     @dataclasses.dataclass
     class _SwitchData:
         """Container for switch-specific data, e.g. the occupied match-action table entry keys."""
-        occupied_dt_entries: Set[Tuple[int, int, int, int, bool]] = dataclasses.field(default_factory=set)
+        occupied_dt_entries: Set[Tuple[int, int, int, int, int]] = dataclasses.field(default_factory=set)
         """
         Set of (rf_id, dt_id, depth, parent_node+1, threshold_passed) tuples that are present in the switch's tables.
         These may or may not actually be used by the current model: they might be leftovers from a previous model.
@@ -197,8 +197,10 @@ class TablePerTreeModelEncoder(ModelEncoder):
         new_dt_to_table_keys: Dict[int, List] = dataclasses.field(default_factory=dict)
         old_certainty_threshold: float = dataclasses.field(default=-1.0)
 
-    def __init__(self, switch_constants: SwitchConstants, switches: List[ControlledSwitch]) -> None:
+    def __init__(self, switch_constants: SwitchConstants, switches: List[ControlledSwitch],
+                 training_config: ModelTrainingConfig) -> None:
         super().__init__(switch_constants, switches)
+        self._training_config: ModelTrainingConfig = training_config
         self._switch_data: Dict[str, TablePerTreeModelEncoder._SwitchData] = \
             {switch.name: TablePerTreeModelEncoder._SwitchData() for switch in switches}
 
@@ -298,7 +300,7 @@ class TablePerTreeModelEncoder(ModelEncoder):
                 feature, threshold = dt.tree_.feature[node_id], int(np.floor(dt.tree_.threshold[node_id]))
 
                 # Remap the feature value (feature index): only consider enabled features
-                feature = Feature.enabled_features().index(Feature(feature))
+                feature = self._training_config.enabled_features.index(Feature(feature))
 
                 left_bounds = feature_bounds.copy()
                 left_bounds[feature] = (left_bounds[feature][0], threshold)
@@ -308,13 +310,14 @@ class TablePerTreeModelEncoder(ModelEncoder):
                 right_bounds[feature] = (threshold + 1, right_bounds[feature][1])  # +1, because bounds are inclusive
                 traverse(dt.tree_.children_right[node_id], right_bounds)
 
-        traverse(0, [(0, f.max_value) for f in Feature.enabled_features()])
+        traverse(0, [(0, f.max_value) for f in self._training_config.enabled_features])
         return result
 
 
-def create_model_encoder(switch_constants: SwitchConstants, switches: List[ControlledSwitch]) -> ModelEncoder:
+def create_model_encoder(switch_constants: SwitchConstants, switches: List[ControlledSwitch],
+                         training_config: ModelTrainingConfig) -> ModelEncoder:
     """Creates the appropriate model encoder based on the switch type."""
     if isinstance(switches[0].config.switch_type, TofinoShellApiConfig):
-        return TablePerTreeModelEncoder(switch_constants, switches)
+        return TablePerTreeModelEncoder(switch_constants, switches, training_config)
     else:
         return TablePerDepthModelEncoder(switch_constants, switches)

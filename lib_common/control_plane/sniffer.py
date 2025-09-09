@@ -6,7 +6,7 @@ import select
 import socket
 import time
 import traceback
-from typing import Callable, Dict, List, TypeVar
+from typing import Callable, Dict, List, Optional, TypeVar
 
 from lib_common.utils import PerfReporter
 
@@ -36,10 +36,10 @@ class PacketSniffer:
         self._shutdown_event: multiprocessing.Event = self._mp_context.Event()
         self._packet_queue: multiprocessing.Queue = self._mp_context.Queue()
         self._packet_count: int = 0
-        self._shutdown = False
+        self._shutdown: bool = False
 
     def sniff_forever(self, interfaces: List[str],
-                      packet_parser: Callable[[bytearray, int, str], T],
+                      packet_parser: Callable[[bytearray, int, str], Optional[T]],
                       packet_handler: Callable[[T], None]) -> None:
         """
         Starts listening for packets without any timeout: the method blocks until shutdown is called.
@@ -48,6 +48,7 @@ class PacketSniffer:
         The parser callback receives the packet's data buffer and the interface the packet was received on.
         This parser callback might be executed on a separate process. It must be fast (must not block), shouldn't
         hold onto the buffer and shouldn't even log for performance reasons.
+        The parser can return None to indicate that the packet should be ignored.
         The handler callback receives the parsed packet data and is free to do whatever it wants with it.
 
         The parsing callback aims to reduce garbage collection overhead by reusing the buffer and putting smaller
@@ -119,7 +120,8 @@ class PacketSniffer:
 
 
 def _sniffing_process(interfaces: List[str], packet_queue: multiprocessing.Queue,
-                      shutdown_event: multiprocessing.Event, packet_parser: Callable[[bytearray, int, str], T]) -> None:
+                      shutdown_event: multiprocessing.Event,
+                      packet_parser: Callable[[bytearray, int, str], Optional[T]]) -> None:
     """Entry point of the sniffer process responsible for listening for packets on the given interfaces."""
     # noinspection PyBroadException
     try:
@@ -133,7 +135,7 @@ def _sniffing_process(interfaces: List[str], packet_queue: multiprocessing.Queue
 
 
 def _sniffing_loop(interfaces: List[str], packet_queue: multiprocessing.Queue,
-                   shutdown_event: multiprocessing.Event, packet_parser: Callable[[bytearray, int, str], T],
+                   shutdown_event: multiprocessing.Event, packet_parser: Callable[[bytearray, int, str], Optional[T]],
                    buffer_capacity: int = 4096) -> None:
     """Listens for packets and puts them into the packet queue until the shutdown event is set."""
     socket_to_interface: Dict[socket.socket, str] = _create_socket_to_interface_dict(interfaces)
@@ -147,7 +149,8 @@ def _sniffing_loop(interfaces: List[str], packet_queue: multiprocessing.Queue,
                 sock: socket.socket = sock
                 bytes_read = sock.recv_into(buffer, buffer_capacity)
                 parsed_packet = packet_parser(buffer, bytes_read, socket_to_interface[sock])
-                packet_queue.put((_PayloadType.DATA.value, parsed_packet))
+                if parsed_packet is not None:
+                    packet_queue.put((_PayloadType.DATA.value, parsed_packet))
     finally:
         for s in socket_list:
             s.close()

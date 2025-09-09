@@ -6,18 +6,19 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 
 import joblib
 import networkx
 from p4utils.utils.topology import NetworkGraph
 
-from controller.data import ControlledSwitchFactory, ControllerConfig, ModelRefiningConfig, Network, \
-    StatsDatabaseConfig, SwitchConfig, \
-    TrafficForwardingMethod, determine_switch_api_types, determine_switch_constants
+from controller.data import ControllerConfig, ModelRefiningConfig, StatsDatabaseConfig
 from controller.interface import ZmqCoordinatorInterface, ZmqOracleInterface
 from controller.logic import ControllerLogic
 from controller.stats import Influxdb3StatsManager, MatplotlibStatsManager, StatsManager, StatsManagerContainer
+from lib_common.control_plane.data import ControlledSwitchFactory, Network, SwitchConfig, TrafficForwardingMethod, \
+    determine_switch_api_types, \
+    determine_switch_constants
 from lib_common.model.data import Model, ModelTrainingConfig
 from lib_common.utils import handle_sigterm_sigint
 from p4_api_bridge import ApiBridgeFactory
@@ -42,6 +43,10 @@ def main() -> None:
                         help='How many packets are expected to be received (or -1 if unknown)')
     parser.add_argument('--monitored-flow-ratio', type=float, required=True,
                         help='Controller config: ratio of flows to monitor (0.0 to 1.0)')
+    parser.add_argument('--collect-stats', action='store_true',
+                        help="Controller config: Whether to collect and export statistics")
+    parser.add_argument('--stats-database', action='store_true',
+                        help="Controller config: Whether to push stats ta database (e.g. InfluxDB)")
     args = parser.parse_args()
 
     logging.basicConfig(force=True, level=args.log_level.upper(),
@@ -57,10 +62,8 @@ def main() -> None:
             f.seek(0)
             topology = NetworkGraph(networkx.node_link_graph(json.load(f)))
 
-    if args.model_path is None:
-        # Create an empty model that doesn't do any classification
-        model = Model(flow_length_to_id=dict(), id_to_rf=dict())
-    else:
+    model = Model(flow_length_to_id=dict(), id_to_rf=dict())  # Empty model, classifies nothing
+    if args.model_path is not None:
         with args.model_path as f:
             model: Model = joblib.load(f)
 
@@ -70,8 +73,9 @@ def main() -> None:
             switch=switch_constants,
             training=ModelTrainingConfig.create_for_switch(switch_constants),
             refining=ModelRefiningConfig(),
-            stats_db=StatsDatabaseConfig(),
-            total_monitored_flow_ratio=args.monitored_flow_ratio
+            stats_db=StatsDatabaseConfig() if args.stats_database else None,
+            monitored_flow_ratio=args.monitored_flow_ratio,
+            stats_from_all_flows=args.collect_stats
     )
 
     forwarding_method = TrafficForwardingMethod.L3
@@ -112,10 +116,12 @@ def start_controller(controller_id: str, config: ControllerConfig, topology: Net
     coordinator_interface = ZmqCoordinatorInterface(config.coordinator_endpoint, controller_id)
 
     start_time_ms = time.time_ns() // 1_000_000  # Used as an offset to make timestamps fit into 32 bits
-    stat_managers = [MatplotlibStatsManager(start_time_ms, config)]
-    if config.stats_db is not None:
-        stat_managers.append(Influxdb3StatsManager(start_time_ms, config, controller_id))
-    stats: StatsManager = StatsManagerContainer(stat_managers)
+    stat_managers: List[StatsManager] = []
+    if config.stats_from_all_flows:
+        stat_managers.append(MatplotlibStatsManager(start_time_ms, config))
+        if config.stats_db is not None:
+            stat_managers.append(Influxdb3StatsManager(start_time_ms, config, controller_id))
+    stats: StatsManager = StatsManagerContainer(start_time_ms, config, stat_managers)
 
     logic = ControllerLogic(start_time_ms, output_dir, config, network,
                             oracle_interface, coordinator_interface, model, stats, expected_packet_count)

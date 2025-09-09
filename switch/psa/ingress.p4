@@ -510,6 +510,7 @@ control MyIngress(inout headers_t hdr,
 
             if (ostd.drop) {
                 //Forward the packet just to the CPU
+                //TODO I don't think the PSA_PORT_CPU works with eBPF-PSA (but we don't drop packets, so no fault yet)
                 send_to_port(ostd, PSA_PORT_CPU);
             } else {
                 //Send the packet both to the CPU and to its original destination

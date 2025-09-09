@@ -5,90 +5,17 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 
-from controller.control_plane.sniffer import PacketSniffer
-from controller.data import ControlledSwitch, Network
+from lib_common.control_plane.data import ControlledSwitch
 from lib_common.data import FEATURE_STRUCT, FLOW_ID_STRUCT, REPORT_HEADER_ETHER_TYPE, REPORT_HEADER_OTHER_FIELDS_STRUCT, \
     SwitchConstants
-from lib_common.flow import Feature, FeatureSchema, FlowDataCols, FlowId, FlowPredCols, Label, \
-    ListOfFeaturesSchema, ListOfFlowDataSchema, ListOfFlowPredSchema
+
+from lib_common.flow import Feature, FeatureSchema, FlowDataCols, FlowId, FlowPredCols, Label, ListOfFeaturesSchema, \
+    ListOfFlowDataSchema, \
+    ListOfFlowPredSchema
+from lib_common.control_plane.sniffer import PacketSniffer
 from lib_common.utils import PerfReporter
-from p4_api_bridge import ApiBridge, TofinoShellApiConfig
 
 _logger = logging.getLogger(__name__)
-
-
-def configure_monitoring(switch_constants: SwitchConstants, network: Network,
-                         total_monitored_flow_ratio: float) -> None:
-    """Initializes the monitoring system on the network."""
-    for switch in network.controlled_switches:
-        # Tofino doesn't require multicast groups, it can clone to the CPU in a simpler way
-        if not isinstance(switch.config.switch_type, TofinoShellApiConfig):
-            _create_report_multicast_groups(switch)
-
-    # Set the CPU port register
-    for switch in network.controlled_switches:
-        if not isinstance(switch.config.switch_type, TofinoShellApiConfig):
-            # Tofino switches don't need (therefore don't have) this register
-            switch.api.register_set('MyIngress.cpu_port_register', 0, switch.cpu_interface[0])
-
-    # Not all switches should report data: if a flow passes through multiple switches,
-    # then only the ones should report that are capable of determining the flow's label, to not waste bandwidth.
-    # For example, only the edge switches should report data (if packets aren't dropped based on their label).
-    reporting_switches: List[ControlledSwitch] = [
-        # TODO don't hardcode this; this should depend on the model and the network topology
-        # Only the last switch, e.g. s2 if there are 2 switches
-        max(network.controlled_switches, key=lambda s: int(s.name[1:]))
-    ]
-    _logger.info(f"Switches that are allowed to report: {', '.join(s.name for s in reporting_switches)}")
-
-    # per_switch_monitored_flow_ratio = total_monitored_flow_ratio / len(network.controlled_switches)
-    # TODO For now switches share their random seed => the monitored flows will be the same on all switches
-    # per_switch_monitored_flow_ratio = total_monitored_flow_ratio
-    # TODO For now switches report 100% of flows, but later we only use a subset of them for training
-    #   (the rest are only included in statistics, e.g. F1 score stats)
-    per_switch_monitored_flow_ratio = 1.0
-
-    for switch in network.controlled_switches:
-        this_switch_ratio = per_switch_monitored_flow_ratio if switch in reporting_switches else 0
-        _logger.info(f"Switch {switch.name} will monitor {this_switch_ratio * 100:.2f}% of flows")
-
-        max_hash = round(((2 ** switch_constants.hashed_flow_id_width) - 1) * per_switch_monitored_flow_ratio)
-        # This branching is necessary because PSA doesn't support range matches
-        if isinstance(switch.config.switch_type, TofinoShellApiConfig):
-            switch.api.table_clear("MyIngress.add_reporting_header_if_necessary_table")
-            if switch in reporting_switches:
-                switch.api.table_add("MyIngress.add_reporting_header_if_necessary_table", [f"0..{max_hash}"],
-                                     "MyIngress.add_reporting_header", [])
-        else:
-            switch.api.register_set("MyIngress.reported_flow_max_hash_register", 0,
-                                    max_hash if switch in reporting_switches else 0)
-
-
-def _create_report_multicast_groups(switch: ControlledSwitch) -> None:
-    """
-    Installs multicast groups on the switch that can be used for cloning report messages to the controller.
-    Multicast groups are used instead of clone sessions due to an eBPF-PSA limitation:
-    https://github.com/p4lang/p4c/issues/4958
-    """
-    _logger.info(f"Creating report multicast group for each egress interface for switch {switch.name}")
-
-    for interface in switch.all_interfaces:
-        if interface == switch.cpu_interface[0]:  # Skip the CPU port: we are interested in the real ports
-            continue
-
-        # The multicast group ID is the same as the port number it forwards to in addition to the CPU port
-        group_id = switch.api.translate_interface_to_port(interface)
-        assert group_id != 0  # Number 0 is not a valid group ID
-        switch.api.multicast_group_create(group_id, [
-            ApiBridge.MulticastGroupMember(
-                    egress_interface=interface,
-                    instance_id=0  # Not used
-            ),
-            ApiBridge.MulticastGroupMember(
-                    egress_interface=switch.cpu_interface[0],
-                    instance_id=0  # Not used
-            )
-        ])
 
 
 def _parse_report_packet(buffer: bytearray, length: int, interface: str) -> Tuple:
@@ -110,7 +37,7 @@ def _parse_report_packet(buffer: bytearray, length: int, interface: str) -> Tupl
     return interface, ether_type, flow_id_tuple, features_tuple, others_tuple
 
 
-class MonitoringAPI:
+class ReportingAPI:
     """
     Class responsible for 1) listening for 2) processing report packets and 3) exposing the collected data to
     higher-level components. In other words, this class implements the monitoring aspects of the controller,
@@ -218,7 +145,7 @@ class MonitoringAPI:
 
             # Locate the flows that have reached the maximum flow length
             max_length_mask = (
-                        self._flow_data[:, FlowDataCols.TOTAL_COUNT] >= self._sw_const.max_classifiable_flow_length)
+                    self._flow_data[:, FlowDataCols.TOTAL_COUNT] >= self._sw_const.max_classifiable_flow_length)
 
             # Determine which flows can be collected and which must be kept in the array (these can overlap)
             collectible_mask = (completed_mask | max_length_mask) & ~self._flow_collect_excluded

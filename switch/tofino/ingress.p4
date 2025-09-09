@@ -14,12 +14,12 @@ control MyIngress(inout headers_t hdr,
 //Creates a register (with the specified initial value) and a register action that executes the following:
 //     reg_val := REG.read(hashed_flow_id) ; reg_val := FUN ; REG.write(hashed_flow_id, reg_val) ; return reg_val
 //  (FUN may be an expression referencing reg_val)
-#define HASH_UPDATE_ACTION(TYPE, REG, INITIAL_VALUE, FUN) \
+#define HASH_UPDATE_ACTION(TYPE, REG, INITIAL_VALUE, FUN, FUN_APPLIED_INITIAL_VALUE) \
         Register<TYPE, hashed_flow_id_t>(1 << HASHED_FLOW_ID_WIDTH, INITIAL_VALUE) REG; \
         RegisterAction<TYPE, hashed_flow_id_t, TYPE>(REG) REG ## _action = { \
             void apply(inout TYPE reg_val, out TYPE return_value) { \
-                if (user_meta.reset_flow_data == 1) { reg_val = INITIAL_VALUE; } \
-                reg_val = FUN; return_value = reg_val; \
+                if (user_meta.reset_flow_data == 1) { reg_val = FUN_APPLIED_INITIAL_VALUE; } else { reg_val = FUN; } \
+                return_value = reg_val; \
             } \
         };
 
@@ -83,9 +83,9 @@ control MyIngress(inout headers_t hdr,
     };
 
     //Some not used features are disabled to save resources
-    //HASH_UPDATE_ACTION(feature_length_t, feature_length_min_register, FEATURE_LENGTH_MAX, min(reg_val, user_meta.features.length_current))
-    HASH_UPDATE_ACTION(feature_length_t, feature_length_max_register, 0, max(reg_val, user_meta.features.length_current))
-    HASH_UPDATE_ACTION(feature_length_sum_t, feature_length_sum_register, 0, reg_val |+| (feature_length_sum_t) user_meta.features.length_current)
+    //HASH_UPDATE_ACTION(feature_length_t, feature_length_min_register, FEATURE_LENGTH_MAX, min(reg_val, user_meta.features.length_current), user_meta.features.length_current)
+    HASH_UPDATE_ACTION(feature_length_t, feature_length_max_register, 0, max(reg_val, user_meta.features.length_current), user_meta.features.length_current)
+    HASH_UPDATE_ACTION(feature_length_sum_t, feature_length_sum_register, 0, reg_val |+| (feature_length_sum_t) user_meta.features.length_current, (feature_length_sum_t) user_meta.features.length_current)
     HASH_INCREMENT_TCP_FLAG_ACTION(feature_count_tcp_syn_register, hdr.tcp.syn)
     HASH_INCREMENT_TCP_FLAG_ACTION(feature_count_tcp_ack_register, hdr.tcp.ack)
     //HASH_INCREMENT_TCP_FLAG_ACTION(feature_count_tcp_psh_register, hdr.tcp.psh)

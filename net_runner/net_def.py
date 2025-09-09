@@ -92,7 +92,7 @@ class CliNet(NetDefinition):
     def topology(self) -> TopologyDefinition:
         switches = ['s1']
         hosts, links = [], []
-        for i in [1, 2]:
+        for i in range(1, len(Label) + 2):  # mimic the eval net definition
             hosts.append(f'h{i}')
             links.append(('s1', f'h{i}'))
         return TopologyDefinition(switches, hosts, links)

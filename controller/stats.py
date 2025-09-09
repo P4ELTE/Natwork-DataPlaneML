@@ -109,8 +109,8 @@ class StatsManager(abc.ABC):
 class StatsManagerContainer(StatsManager):
     """Contains multiple StatsManager instances and delegates calls to them."""
 
-    def __init__(self, managers: List[StatsManager]) -> None:
-        super().__init__(managers[0]._start_time_ms, managers[0]._config)
+    def __init__(self, start_time_ms: int, config: ControllerConfig, managers: List[StatsManager]) -> None:
+        super().__init__(start_time_ms, config)
         self._instances: List[StatsManager] = list(managers)
 
     def finished(self) -> None:
@@ -487,7 +487,7 @@ class MatplotlibStatsManager(StatsManager):
         Flow statistics:
         - Total flow count: {self._total_flow_count}
         - Monitored flow count: {self._monitored_flow_count} ({self._monitored_flow_count / self._total_flow_count * 100:.2f}%)
-        - Target monitored flow ratio: {self._config.total_monitored_flow_ratio * 100:.2f}%
+        - Target monitored flow ratio: {self._config.monitored_flow_ratio * 100:.2f}%
         - Packet count: min-Q1-median-Q3-max = {quantiles(flow_packet_counts)}
         
         Label statistics:

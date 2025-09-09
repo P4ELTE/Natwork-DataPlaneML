@@ -1,8 +1,9 @@
 import hashlib
 import os
+import subprocess
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from mininet.log import info
 from p4utils.mininetlib.network_API import NetworkAPI
@@ -11,7 +12,7 @@ import net_runner.compiler
 from lib_common.data import SwitchConstants
 from net_runner.net_def import CliNet, CompileNet, EvalNet, NetDefinition
 from net_runner.switch import NikssSwitch
-from net_runner.utils import get_nodes, schedule_script, shutdown_processes
+from net_runner.utils import ScheduledScript, get_nodes, schedule_script, shutdown_processes
 
 # The available network definitions that define what exactly the network should do
 net_def_choices = {'compile': CompileNet, 'cli': CliNet, 'pcap_eval': EvalNet}
@@ -20,7 +21,7 @@ net_def_choices = {'compile': CompileNet, 'cli': CliNet, 'pcap_eval': EvalNet}
 parser = ArgumentParser()
 parser.add_argument('--log-level', choices=['debug', 'info'], default='info')
 parser.add_argument('--mode', choices=net_def_choices.keys(), default='cli')
-parser.add_argument('--oracle-csv', type=Path, required=True,
+parser.add_argument('--csv-path', type=Path, required=True,
                     help='Data source of the flow classifier oracle')
 parser.add_argument('--attack-type-whitelist', type=str, default=None,
                     help="Comma-separated list of flow labels to exclusively consider as attacks")
@@ -37,6 +38,12 @@ parser.add_argument('--eval-save-pcap', action='store_true',
                     help='Eval mode: save the received packets to PCAP files')
 parser.add_argument('--monitored-flow-ratio', type=float, required=True,
                     help='Controller config: ratio of flows to monitor (0.0 to 1.0)')
+parser.add_argument('--collect-stats', action='store_true',
+                    help="Controller config: whether to collect and export statistics")
+parser.add_argument('--stats-database', action='store_true',
+                    help="Controller config: Whether to push stats ta database (e.g. InfluxDB)")
+parser.add_argument('--centralized', type=Path, default=None,
+                    help="Provide a model path to use the centralized component instead of a regular controller")
 args = parser.parse_args()
 
 net = NetworkAPI()
@@ -44,6 +51,9 @@ net.setLogLevel(args.log_level)
 
 switch_constants: SwitchConstants = SwitchConstants.create_ebpf()
 switch_compiler, switch_source = net_runner.compiler.NikssCompiler, 'switch/psa/switch.p4'
+
+if args.centralized is not None:
+    switch_source = switch_source.replace('/psa/', '/psa-centralized/')
 
 net_def: NetDefinition = net_def_choices[args.mode](switch_constants, args)
 
@@ -86,31 +96,47 @@ out_dir.mkdir(parents=True, exist_ok=True)
 python_flags = '-Werror -Wignore::DeprecationWarning'
 python_script_flags = f'--log-level {args.log_level}'
 
-# Coordinator configuration
-coordinator_cmd = f'python3 {python_flags} -m coordinator {python_script_flags} {net_def.coordinator_extra_args()}'
-coordinator_script = schedule_script(net, coordinator_cmd, log_path / 'coordinator.log',
-                                     'entering main loop...')
+# List of scripts scheduled to run when the network is started, in the same order as they were scheduled
+scripts: List[ScheduledScript] = []
 
-# Oracle configuration
-oracle_csv_path: str = str(args.oracle_csv)
-attack_type_whitelist: Optional[str] = args.attack_type_whitelist
-oracle_cmd = (f'python3 {python_flags} -m oracle {python_script_flags} --csv-path {oracle_csv_path}'
-              f' --csv-cache-path work/cache/oracle_csv_{hashlib.md5(oracle_csv_path.encode()).hexdigest()}'
-              f' {f"--attack-type-whitelist {attack_type_whitelist}" if attack_type_whitelist is not None else ""}'
-              f' {net_def.oracle_extra_args()}')
-oracle_script = schedule_script(net, oracle_cmd, log_path / 'oracle.log',
-                                'entering main loop...')
+# Scripts that should have their performance evaluated, along with the output log files
+perf_eval_scripts: List[Tuple[ScheduledScript, Path]] = []
 
-# Controller configuration
-controller_cmd = (f'python3 {python_flags} -m controller {python_script_flags} --topology-path {net.topoFile}'
-                  f' --output-dir {out_dir} --expected-packet-count {args.expected_packet_count}'
-                  f' --monitored-flow-ratio {args.monitored_flow_ratio}'
-                  f' {net_def.controller_extra_args()}')
-controller_script = schedule_script(net, controller_cmd, log_path / 'controller.log',
-                                    'Entering main loop...')
+if args.centralized is None:
+    # Coordinator configuration
+    coordinator_cmd = f'python3 {python_flags} -m coordinator {python_script_flags} {net_def.coordinator_extra_args()}'
+    coordinator_script = schedule_script(net, coordinator_cmd, log_path / 'coordinator.log',
+                                         'entering main loop...')
 
-# All scripts
-scripts = [coordinator_script, oracle_script, controller_script]
+    # Oracle configuration
+    csv_path: str = str(args.csv_path)
+    attack_type_whitelist: Optional[str] = args.attack_type_whitelist
+    oracle_cmd = (f'python3 {python_flags} -m oracle {python_script_flags} --csv-path {csv_path}'
+                  f' --csv-cache-path work/cache/oracle_csv_{hashlib.md5(csv_path.encode()).hexdigest()}'
+                  f' {f"--attack-type-whitelist {attack_type_whitelist}" if attack_type_whitelist is not None else ""}'
+                  f' {net_def.oracle_extra_args()}')
+    oracle_script = schedule_script(net, oracle_cmd, log_path / 'oracle.log',
+                                    'entering main loop...')
+
+    # Controller configuration
+    controller_cmd = (f'python3 {python_flags} -m controller {python_script_flags} --topology-path {net.topoFile}'
+                      f' --output-dir {out_dir} --expected-packet-count {args.expected_packet_count}'
+                      f' --monitored-flow-ratio {args.monitored_flow_ratio}'
+                      f' {"--collect-stats" if args.collect_stats else ""}'
+                      f' {"--stats-database" if args.stats_database else ""}'
+                      f' {net_def.controller_extra_args()}')
+    controller_script = schedule_script(net, controller_cmd, log_path / 'controller.log',
+                                        'Entering main loop...')
+
+    scripts += [coordinator_script, oracle_script, controller_script]
+    perf_eval_scripts += [(controller_script, log_path / 'perf-controller.log')]
+else:  # Use different scripts if centralized component is selected
+    centralized_cmd = (f'python3 {python_flags} -m centralized {python_script_flags} --topology-path {net.topoFile}'
+                       f' --model-path {args.centralized} --expected-packet-count {args.expected_packet_count}')
+    centralized_script = schedule_script(net, centralized_cmd, log_path / 'centralized.log',
+                                         'Entering main loop...')
+    scripts += [centralized_script]
+    perf_eval_scripts += [(centralized_script, log_path / 'perf-centralized.log')]
 
 
 # Configuration after the network is started
@@ -134,6 +160,9 @@ net.disableCli()
 try:
     if net_def.execute_pre_start(net):
         net.startNetwork()
+        for (script, out_path) in perf_eval_scripts:
+            pid = net.scripts_pids[scripts.index(script)]  # Indexes match because of the order of scheduling
+            subprocess.run(f'perf stat -e task-clock,cycles,instructions -o {out_path} -p {pid} &', shell=True)
         configure_after_startup()
         for script in scripts:
             script.wait_until_ready()

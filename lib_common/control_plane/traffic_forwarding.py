@@ -1,10 +1,27 @@
 import logging
 from typing import List
 
-from controller.data import ControlledSwitch, TrafficForwardingMethod, Network
+from p4_api_bridge import ApiBridge
+
+from lib_common.control_plane.data import ControlledSwitch, TrafficForwardingMethod, Network
 from lib_common.flow import Label
 
 _logger = logging.getLogger(__name__)
+
+
+def create_cpu_port_multicast(switches: List[ControlledSwitch], group_id: int, instance_id: int = 0) -> None:
+    """
+    Creates a multicast group pointing to the CPU port for each controlled switch.
+    This is a workaround for the fact the PSA_PORT_CPU doesn't seem to work on NIKSS switches.
+    """
+    _logger.info(f"Creating multicast group '{group_id}' for CPU port on {[s.name for s in switches]}...")
+    for switch in switches:
+        _logger.debug(f"Creating multicast group on {switch}...")
+        member = ApiBridge.MulticastGroupMember(
+                egress_interface=switch.cpu_interface[0],
+                instance_id=instance_id
+        )
+        switch.api.multicast_group_create(group_id, [member])
 
 
 def configure_forwarding(network: Network) -> None:

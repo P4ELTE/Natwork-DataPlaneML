@@ -21,6 +21,7 @@ class ScheduledScript:
         """Waits until the script has written the given text to the output file (or a timeout happens)."""
         info(f'Waiting for "{text}" to appear in {self.out_file}...\n')
         start_time = time.time()
+        # noinspection PyTypeChecker
         while time.time() - start_time < timeout_sec:
             try:
                 with self.out_file.open('r') as f:

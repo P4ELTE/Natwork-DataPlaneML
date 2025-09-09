@@ -1,5 +1,6 @@
 import dataclasses
 import enum
+import re
 import socket
 import struct
 from typing import List, Tuple
@@ -43,6 +44,15 @@ class FlowId:
                                   a[start_index + 4])
 
     @staticmethod
+    def from_str(string: str) -> 'FlowId':
+        """Parses a flow ID from its string representation."""
+        match = re.match(r'<?(\d+\.\d+\.\d+\.\d+):(\d+)-(\d+\.\d+\.\d+\.\d+):(\d+)#(\d+)>?', string)
+        if not match:
+            raise ValueError(f"Invalid flow ID string format: {string}")
+        ip_src, port_src, ip_dst, port_dst, protocol = match.groups()
+        return FlowId.from_strings(ip_src, ip_dst, protocol, port_src, port_dst)
+
+    @staticmethod
     def from_strings(ip_src: str, ip_dst: str, protocol: str, port_src: str, port_dst: str) -> 'FlowId':
         """Parses a flow ID from string values."""
         return FlowId.from_values(_ip_str_to_int(ip_src), _ip_str_to_int(ip_dst),
@@ -55,7 +65,7 @@ class FlowId:
             port_src, port_dst = ip.data.sport, ip.data.dport
         else:
             port_src, port_dst = 0, 0
-        return FlowId.from_values(ip.src, ip.dst, ip.p, port_src, port_dst)
+        return FlowId.from_values(_IP_STRUCT.unpack(ip.src)[0], _IP_STRUCT.unpack(ip.dst)[0], ip.p, port_src, port_dst)
 
     def to_tcpdump_filter(self) -> str:
         """Returns a tcpdump filter string that matches packets belonging to this flow."""
@@ -113,22 +123,6 @@ class Feature(enum.IntEnum):
     PORT_CLIENT = enum.auto()
     PORT_SERVER = enum.auto()
     LENGTH_CURRENT = enum.auto()
-
-    @classmethod
-    def enabled_features(cls) -> List['Feature']:
-        """
-        The features that are allowed to be used in the classification process.
-        Some features might be blacklisted because e.g. Tofino does not support them.
-        The relative order of the features is preserved in the returned subset.
-        """
-        # return [x for x in Feature]
-        return [cls.LENGTH_MAX, cls.LENGTH_SUM, cls.COUNT_TCP_SYN, cls.COUNT_TCP_ACK, cls.COUNT_TCP_RST,
-                cls.PORT_CLIENT, cls.PORT_SERVER, cls.LENGTH_CURRENT]
-
-    @classmethod
-    def disabled_features(cls) -> List['Feature']:
-        """The opposite of `enabled_features()`. Contains all features that are not allowed to be used."""
-        return [x for x in Feature if x not in cls.enabled_features()]
 
     @classmethod
     def time_based_features(cls) -> List['Feature']:

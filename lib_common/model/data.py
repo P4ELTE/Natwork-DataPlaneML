@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from lib_common.data import SwitchConstants
+from lib_common.flow import Feature
 
 
 @dataclasses.dataclass(frozen=True)
@@ -19,6 +20,7 @@ class ModelTrainingConfig:
     rf_max_max_depth: int  # Maximum value of a respective hyperparameter
     max_rf_count: int  # Maximum number of random forests
     max_classifiable_flow_length: int  # Maximum flow length that can be classified
+    enabled_features: List[Feature]  # See disabled_features for the opposite
     use_time_based_features: bool = False  # Whether to use time-based features, e.g. inter-arrival time, flow duration
     rf_split_min_samples: Union[int, float] = 10  # Inner nodes have at least this many (or fraction of) samples
     rf_node_min_samples: Union[int, float] = 2  # All nodes have at least this many (or fraction of) samples
@@ -33,9 +35,25 @@ class ModelTrainingConfig:
     rf_hyperopt_penalty_n_estimators: float = 0.01  # Tuning score is penalized by: this*(param_value / max_param_value)
     rf_hyperopt_penalty_max_depth: float = 0.01  # Tuning score is penalized by: this*(param_value / max_param_value)
 
+    def __post_init__(self) -> None:
+        if self.enabled_features != [f for f in Feature if f in self.enabled_features]:
+            raise ValueError(f"Enabled features must be an ordered sublist of Features")
+
+    @property
+    def disabled_features(self) -> List['Feature']:
+        """
+        The opposite of `enabled_features`: contains all features that are not allowed to be used.
+        Some features might be blacklisted because e.g. Tofino does not support them.
+        The relative order of the features is preserved in the returned subset.
+        """
+        return [x for x in Feature if x not in self.enabled_features]
+
     @staticmethod
     def create_for_switch(switch: SwitchConstants) -> 'ModelTrainingConfig':
         """Creates a config based on the given switch constants, e.g. random forest parameters."""
+        enabled_features = [Feature.LENGTH_MAX, Feature.LENGTH_SUM, Feature.COUNT_TCP_SYN, Feature.COUNT_TCP_ACK,
+                            Feature.COUNT_TCP_RST, Feature.PORT_CLIENT, Feature.PORT_SERVER, Feature.LENGTH_CURRENT]
+
         # The following values were calculated using bayesian optimization
         if switch.dt_per_rf_count == 6 and switch.max_dt_depth == 7 and switch.max_rf_count == 8:
             return ModelTrainingConfig(
@@ -47,7 +65,8 @@ class ModelTrainingConfig:
                     rf_max_n_estimators=switch.dt_per_rf_count,
                     rf_max_max_depth=switch.max_dt_depth,
                     max_rf_count=switch.max_rf_count,
-                    max_classifiable_flow_length=switch.max_classifiable_flow_length
+                    max_classifiable_flow_length=switch.max_classifiable_flow_length,
+                    enabled_features=enabled_features
             )
         elif switch.dt_per_rf_count == 3 and switch.max_dt_depth == 5 and switch.max_rf_count == 6:
             return ModelTrainingConfig(
@@ -59,7 +78,8 @@ class ModelTrainingConfig:
                     rf_max_n_estimators=switch.dt_per_rf_count,
                     rf_max_max_depth=switch.max_dt_depth,
                     max_rf_count=switch.max_rf_count,
-                    max_classifiable_flow_length=switch.max_classifiable_flow_length
+                    max_classifiable_flow_length=switch.max_classifiable_flow_length,
+                    enabled_features=enabled_features
             )
         elif switch.dt_per_rf_count == 2 and switch.max_dt_depth == 5 and switch.max_rf_count == 6:
             return ModelTrainingConfig(
@@ -71,10 +91,28 @@ class ModelTrainingConfig:
                     rf_max_n_estimators=switch.dt_per_rf_count,
                     rf_max_max_depth=switch.max_dt_depth,
                     max_rf_count=switch.max_rf_count,
-                    max_classifiable_flow_length=switch.max_classifiable_flow_length
+                    max_classifiable_flow_length=switch.max_classifiable_flow_length,
+                    enabled_features=enabled_features
             )
         else:
             raise ValueError(f"Unsupported input: {switch}")
+
+    @staticmethod
+    def create_for_centralized() -> 'ModelTrainingConfig':
+        """Creates a config for the centralized component, which does not suffer from data plane limitations."""
+        # The following values were calculated using bayesian optimization
+        return ModelTrainingConfig(
+                classification_certainty_threshold = 0.800,
+                rf_score_threshold_old_over_new = 0.999,
+                rf_score_threshold_new = 0.000,
+                rf_score_threshold_old_over_none = 0.999,
+                rf_score_penalize_below_classified_ratio = 0.000,
+                rf_max_n_estimators=16,
+                rf_max_max_depth=16,
+                max_rf_count=32,
+                max_classifiable_flow_length=32,
+                enabled_features=[f for f in Feature if f not in Feature.time_based_features()]
+        )
 
 
 @dataclasses.dataclass(frozen=True)

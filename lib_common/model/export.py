@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 _executor = concurrent.futures.ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.context.SpawnContext())
 
 
-def visualize_model_nonblocking(model: Model, identifier: str, save_dir: Path, first_page: str = "") -> None:
+def visualize_model_nonblocking(model: Model, identifier: str, save_path: Path, first_page: str = "") -> None:
     """
     Calls visualize_model in a separate thread or process. Does not wait for it to complete.
     This method was created because visualization can take multiple seconds.
@@ -31,15 +31,15 @@ def visualize_model_nonblocking(model: Model, identifier: str, save_dir: Path, f
             _logger.error(f"Visualization of model '{identifier}' failed:")
             _logger.error(f.exception())
 
-    _logger.debug(f"Exporting visualization of model '{identifier}' to {save_dir}")
-    _executor.submit(visualize_model, model, identifier, save_dir, first_page).add_done_callback(done_callback)
+    _logger.debug(f"Exporting visualization of model '{identifier}' to {save_path}")
+    _executor.submit(visualize_model, model, identifier, save_path, first_page).add_done_callback(done_callback)
 
 
-def visualize_model(model: Model, identifier: str, save_dir: Path, first_page: str = "") -> None:
+def visualize_model(model: Model, identifier: str, save_path: Path, first_page: str = "") -> None:
     """Visualizes a model, saving the graphics into the given directory."""
-    _logger.debug(f"Exporting visualization of model '{identifier}' to {save_dir}")
-    save_dir.mkdir(parents=True, exist_ok=True)
-    with PdfPages(save_dir / f'model_{identifier}.pdf') as pages:
+    _logger.debug(f"Exporting visualization of model '{identifier}' to {save_path}")
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    with PdfPages(save_path) as pages:
         if len(first_page) > 0:
             fig = plt.figure(figsize=(20, 10))
             fig.text(0.05, 0.95, first_page, fontsize=12, ha='left', va='top')

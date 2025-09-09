@@ -1,0 +1,10 @@
+# Working directory
+/work
+
+# IDE files
+/.idea
+/.vscode
+
+# Caches
+__pycache__
+.ipynb_checkpoints
